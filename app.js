@@ -8,7 +8,7 @@ console.log("process.env.DB_PASSWORD", process.env.DB_PASSWORD);
 
 // 从环境变量获取数据库连接信息
 const pool = mysql.createPool({
-  host: "138.2.90.5:3306", // 指定 MySQL 服务容器名称
+  host: "mysql", // 指定 MySQL 服务容器名称
   user: "root", // MySQL 用户
   password: process.env.DB_PASSWORD, // 从环境变量获取密码
   database: "express_db", // MySQL 数据库名
