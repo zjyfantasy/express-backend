@@ -5,8 +5,6 @@ const mysql = require("mysql2/promise");
 const app = express();
 const port = 3000;
 
-console.log("process.env.DB_PASSWORD", process.env.DB_PASSWORD);
-
 // 从环境变量获取数据库连接信息
 const pool = mysql.createPool({
   host: "mysql", // 指定 MySQL 服务容器名称
@@ -64,5 +62,6 @@ app.get("/getUsers", async (req, res) => {
 });
 
 app.listen(port, () => {
+  console.log("process.env.DB_PASSWORD", process.env.DB_PASSWORD);
   console.log(`Express 应用正在运行，访问地址：http://localhost:${port}`);
 });
