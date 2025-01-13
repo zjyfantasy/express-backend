@@ -16,6 +16,8 @@ const pool = mysql.createPool({
 // 测试数据库连接
 pool.getConnection((err, connection) => {
   if (err) {
+    console.log(123);
+    console.error("process.env.DB_PASSWORD", process.env.DB_PASSWORD);
     console.error("数据库连接失败：", err);
   } else {
     console.log("成功连接到数据库！");
@@ -62,6 +64,5 @@ app.get("/getUsers", async (req, res) => {
 });
 
 app.listen(port, () => {
-  console.log("process.env.DB_PASSWORD", process.env.DB_PASSWORD);
   console.log(`Express 应用正在运行，访问地址：http://localhost:${port}`);
 });
