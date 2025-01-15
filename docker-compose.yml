@@ -14,7 +14,7 @@ services:
       - DB_PASSWORD=${DB_PASSWORD}
       - DB_NAME=express_db
     networks:
-          net:
+      - mynet
   mysql:
     image: mysql:8
     container_name: mysql
@@ -26,6 +26,10 @@ services:
     volumes:
       - mysql-data:/var/lib/mysql
     networks:
-          net:
+      - mynet
 volumes:
   mysql-data:
+
+networks:
+  mynet:
+    driver: bridge
