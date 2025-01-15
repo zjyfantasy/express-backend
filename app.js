@@ -7,7 +7,7 @@ const port = 3000;
 
 // 从环境变量获取数据库连接信息
 const pool = mysql.createPool({
-  host: "mysql", // 指定 MySQL 服务容器名称
+  host: "1.95.77.45", // 指定 MySQL 服务容器名称
   user: "root", // MySQL 用户
   password: "st!1Kzjy", // 从环境变量获取密码
   database: "express_db", // MySQL 数据库名
