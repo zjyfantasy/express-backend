@@ -1,29 +1,53 @@
 require("dotenv").config();
 const express = require("express");
-const mysql = require("mysql2");
+const mysql = require("mysql2/promise");
 
 const app = express();
 const port = 3000;
 
-// 从环境变量获取数据库连接信息
-const pool = mysql.createPool({
-  host: "mysql", // 指定 MySQL 服务容器名称
-  user: "root", // MySQL 用户
-  password: "st!1Kzjy", // 从环境变量获取密码
-  database: "express_db", // MySQL 数据库名
-});
+async function connectToDatabase() {
+  try {
+    const connection = await mysql.createConnection({
+      host: "1.95.77.45", // 指定 MySQL 服务容器名称
+      user: "root", // MySQL 用户
+      password: "st!1Kzjy", // 从环境变量获取密码
+      database: "express_db", // MySQL 数据库名
+    });
 
-// 测试数据库连接
-pool.getConnection((err, connection) => {
-  if (err) {
-    console.log(123);
-    console.error("process.env.DB_PASSWORD", process.env.DB_PASSWORD);
-    console.error("数据库连接失败：", err);
-  } else {
-    console.log("成功连接到数据库！");
-    connection.release();
+    console.log("连接成功！");
+    // // 执行数据库操作，例如查询数据
+    // const [rows, fields] = await connection.execute("SELECT * FROM users");
+    // console.log(rows);
+
+    // 关闭连接
+    await connection.end();
+  } catch (err) {
+    console.error("连接失败: ", err);
   }
-});
+}
+
+// 调用函数
+connectToDatabase();
+
+// // 从环境变量获取数据库连接信息
+// const pool = mysql.createPool({
+//   host: "1.95.77.45", // 指定 MySQL 服务容器名称
+//   user: "root", // MySQL 用户
+//   password: "st!1Kzjy", // 从环境变量获取密码
+//   database: "express_db", // MySQL 数据库名
+// });
+
+// // 测试数据库连接
+// pool.getConnection((err, connection) => {
+//   if (err) {
+//     console.log(123);
+//     console.error("process.env.DB_PASSWORD", process.env.DB_PASSWORD);
+//     console.error("数据库连接失败：", err);
+//   } else {
+//     console.log("成功连接到数据库！");
+//     connection.release();
+//   }
+// });
 
 // 示例路由
 app.get("/", (req, res) => {
