@@ -7,7 +7,8 @@ services:
     ports:
       - "3000:3000"
     depends_on:
-      - mysql
+      mysql:  # 依赖于 mysql 服务。
+        condition: service_healthy  # 依赖条件：mysql 服务必须处于健康状态。
     environment:
       - DB_HOST=mysql
       - DB_USER=root
@@ -25,6 +26,12 @@ services:
       - "3306:3306"
     volumes:
       - mysql-data:/var/lib/mysql
+    healthcheck: # 健康检查配置。
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"] # 健康检查命令。
+      interval: 10s # 检查间隔。
+      timeout: 20s # 超时时间。
+      retries: 10 # 重试次数。
+      start_period: 30s # 启动前等待时间，用于服务启动初期。
     networks:
       - mynet
 volumes:
