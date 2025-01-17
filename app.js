@@ -9,7 +9,7 @@ const port = 3000;
 const pool = mysql.createPool({
   host: "mysql", // 指定 MySQL 服务容器名称
   user: "root", // MySQL 用户
-  password: "st!1Kzjy", // 从环境变量获取密码
+  password: process.env.DB_PASSWORD, // 从环境变量获取密码
   database: "express_db", // MySQL 数据库名
 });
 
@@ -43,22 +43,130 @@ app.get("/createTable", async (req, res) => {
    email VARCHAR(255) NOT NULL UNIQUE
   )  ENGINE=INNODB;
  `;
-    const [results, fields] = await pool.execute(createTableSql);
-    console.log(results, fields); // 结果集
-    res.send("success");
+    await pool.execute(createTableSql);
+    res.status(200).send({ code: 1, data: "success" });
   } catch (err) {
     console.log(err);
   }
 });
 
-// 示例路由
-app.get("/getUsers", async (req, res) => {
+app.get("/createOpenIdTable", async (req, res) => {
   // 简单查询
   try {
-    const [results, fields] = await pool.query("SELECT * FROM users");
+    const createTableSql = `
+  CREATE TABLE IF NOT EXISTS openids (
+   id INT AUTO_INCREMENT PRIMARY KEY,
+   openId VARCHAR(255) UNIQUE
+  )  ENGINE=INNODB;
+ `;
+    await pool.execute(createTableSql);
+    res.status(200).send({ code: 0, data: "success" });
+  } catch (err) {
+    console.log(err);
+    res.status(500).send({ message: err.message });
+  }
+});
+
+app.get("/get_openid", async (req, res) => {
+  try {
+    const openid = req.query.openid;
+    console.log(openid, !!openid);
+
+    if (!openid) {
+      res.status(400).send({ code: 1, message: "请输入openid" });
+      return;
+    }
+    const response = await fetch(
+      `https://api.weixin.qq.com/sns/jscode2session?appid=wxf131dc126ea994e9&secret=c6aa9181c25cc449ecd90a93c630f5ed&js_code=${openid}&grant_type=authorization_code`
+    );
+    const result = await response.json();
+    if (result.errcode) {
+      res.status(400).send({ message: result.errmsg });
+      return;
+    }
+    res.status(200).send({ code: 1, data: result.openid });
+  } catch (err) {
+    console.log(err);
+    res.status(500).send({ message: err.message });
+  }
+});
+
+app.get("/get_openids", async (req, res) => {
+  try {
+    console.log(req);
+    const [results, fields] = await pool.query("SELECT * FROM openids");
+    console.log(fields);
     res.status(200).send({ code: 1, data: results });
   } catch (err) {
     console.log(err);
+    res.status(500).send({ message: err.message });
+  }
+});
+
+app.get("/store_openid", async (req, res) => {
+  try {
+    const openid = req.query.openid;
+    console.log(openid, !!openid);
+
+    if (!openid) {
+      res.status(400).send({ code: 1, message: "请输入openid" });
+      return;
+    }
+    const [results] = await pool.query(
+      `SELECT * FROM openids where openId = ${openid}`
+    );
+    if (results.length) {
+      res.status(200).send({ code: 1, message: "openId已存在" });
+      return;
+    }
+    const [results2] = await pool.execute(`
+      INSERT INTO openids (openId)
+      VALUES ('${openid}');
+    `);
+    if (results2.affectedRows) {
+      res.status(200).send({ code: 0, data: openid });
+    } else {
+      res.status(400).send({ code: 1, message: "保存失败" });
+    }
+  } catch (err) {
+    res.status(500).send({ message: err.message });
+  }
+});
+
+app.get("/remove_openid", async (req, res) => {
+  try {
+    const openid = req.query.openid;
+    if (!openid) {
+      res.status(400).send({ code: 1, message: "请输入openid" });
+      return;
+    }
+    const [results] = await pool.query(
+      `SELECT * FROM openids where openId = ${openid}`
+    );
+    if (results.length === 0) {
+      res.status(200).send({ code: 1, message: "openId不存在" });
+      return;
+    }
+    const [results2] = await pool.execute(`
+      delete FROM openids where openId = ${openid}
+    `);
+    if (results2.affectedRows) {
+      res.status(200).send({ code: 0, data: openid });
+    } else {
+      res.status(400).send({ code: 1, message: "删除失败" });
+    }
+  } catch (err) {
+    res.status(500).send({ message: err.message });
+  }
+});
+
+app.get("/clear_openids", async (req, res) => {
+  try {
+    await pool.execute(`
+      DELETE FROM openids
+    `);
+    res.status(200).send({ code: 0, data: "删除成功" });
+  } catch (err) {
     res.status(500).send({ message: err.message });
   }
 });
