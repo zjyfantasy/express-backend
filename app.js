@@ -1,16 +1,17 @@
 require("dotenv").config();
+const fetch = require("node-fetch");
 const express = require("express");
 const mysql = require("mysql2/promise");
 
 const app = express();
-const port = 3000;
+const port = 3001;
 
 // 从环境变量获取数据库连接信息
 const pool = mysql.createPool({
-  host: "mysql", // 指定 MySQL 服务容器名称
-  user: "root", // MySQL 用户
-  password: process.env.DB_PASSWORD, // 从环境变量获取密码
-  database: "express_db", // MySQL 数据库名
+  host: "47.117.173.54", // 指定 MySQL 服务容器名称
+  user: "zaoyinjiance", // MySQL 用户
+  password: "wxnETRf8YH8646bm", // 从环境变量获取密码
+  database: "zaoyinjiance", // MySQL 数据库名
 });
 
 // 测试数据库连接
@@ -113,16 +114,17 @@ app.get("/store_openid", async (req, res) => {
       return;
     }
     const [results] = await pool.query(
-      `SELECT * FROM openids where openId = ${openid}`
+      `SELECT * FROM openids WHERE openId = ?`,
+      [openid]
     );
     if (results.length) {
       res.status(200).send({ code: 1, message: "openId已存在" });
       return;
     }
-    const [results2] = await pool.execute(`
-      INSERT INTO openids (openId)
-      VALUES ('${openid}');
-    `);
+    const [results2] = await pool.execute(
+      `INSERT INTO openids (openId) VALUES (?)`,
+      [openid]
+    );
     if (results2.affectedRows) {
       res.status(200).send({ code: 0, data: openid });
     } else {
@@ -141,15 +143,17 @@ app.get("/remove_openid", async (req, res) => {
       return;
     }
     const [results] = await pool.query(
-      `SELECT * FROM openids where openId = ${openid}`
+      `SELECT * FROM openids WHERE openId = ?`,
+      [openid]
     );
     if (results.length === 0) {
       res.status(200).send({ code: 1, message: "openId不存在" });
       return;
     }
-    const [results2] = await pool.execute(`
-      delete FROM openids where openId = ${openid}
-    `);
+    const [results2] = await pool.execute(
+      `DELETE FROM openids WHERE openId = ?`,
+      [openid]
+    );
     if (results2.affectedRows) {
       res.status(200).send({ code: 0, data: openid });
     } else {
